@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <title>Gardabani Bahçesi - Məhsul Alışı</title>
+  <style>
+    :root {
+      --primary: #113c2b;
+      --primary-hover: #0c2b1f;
+      --gold: #d4af37;
+      --gold-light: #f7eecf;
+      --gold-dark: #aa861c;
+      --bg: #f4f7f5;
+      --card-bg: #ffffff;
+      --text: #1d2b24;
+      --text-muted: #5e7066;
+      --border: #dbe4df;
+      --danger: #b33939;
+      --danger-hover: #8e2b2b;
+      --danger-bg: #fdf0f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 0.75rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 0;
+    }
+
+    .header {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary) 0%, #0d291e 100%);
+      color: var(--card-bg);
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      border-bottom: 3px solid var(--gold);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      background-color: #fff;
+    }
+
+    .header h1 {
+      font-size: 1.15rem;
+      color: var(--gold-light);
+      letter-spacing: 0.5px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .card-form {
+      flex-shrink: 0;
+    }
+
+    #entry-form:has(:invalid) button[type="submit"] {
+      opacity: 0.6;
+      filter: grayscale(0.4);
+    }
+
+    .form-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+
+    .row-top {
+      grid-template-columns: 180px 1fr;
+    }
+
+    .row-bottom {
+      grid-template-columns: 1fr 1fr 1fr 150px;
+    }
+
+    @media (max-width: 768px) {
+      .row-top, .row-bottom {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      position: relative;
+    }
+
+    .label-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .unit-badge {
+      display: none;
+      background: var(--gold);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .unit-badge.show {
+      display: inline-block;
+    }
+
+    input {
+      height: 38px;
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      background: #fafbfb;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 3px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .dropdown.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f4f2;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover, .dropdown-item.active {
+      background-color: var(--gold-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .btn {
+      height: 38px;
+      padding: 0 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--primary);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-dark);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      background: #eef3f0;
+      color: var(--primary);
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      height: 32px;
+      font-size: 0.8rem;
+      padding: 0 0.6rem;
+    }
+
+    .btn-danger-outline:hover {
+      background: var(--danger-bg);
+    }
+
+    .btn-icon-danger {
+      background: transparent;
+      color: var(--danger);
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .card-table {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #btn-delete-selected {
+      display: none;
+    }
+
+    .table-tools {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      min-height: 32px;
+    }
+
+    .table-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      min-width: 650px;
+    }
+
+    th, td {
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.15s ease;
+    }
+
+    tbody tr:has(.td-checkbox input:checked) {
+      background-color: var(--gold-light);
+    }
+
+    tbody tr:has(.td-checkbox input:checked) td {
+      color: var(--primary);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #edf2ee;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      z-index: 2;
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .th-checkbox, .td-checkbox {
+      width: 40px;
+      text-align: center;
+    }
+
+    .th-checkbox input, .td-checkbox input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .actions-bar {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .actions-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .total-badge {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #c2d0c8;
+      border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-dark);
+    }
+
+    /* --- MİNİMALİST POP-UP (MODAL) --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 30, 20, 0.45);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 360px;
+      padding: 1.25rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
+      animation: modalFadeIn 0.15s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-box h3 {
+      font-size: 1.05rem;
+      color: var(--primary);
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-box p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .btn-modal-cancel {
+      background: #f0f3f1;
+      color: var(--text);
+    }
+
+    .btn-modal-cancel:hover {
+      background: #e2e8e4;
+    }
+
+    .btn-modal-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-modal-danger:hover {
+      background: var(--danger-hover);
+    }
+
+    /* --- TOAST BİLDİRİŞ (ALERT ƏVƏZİ) --- */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--primary);
+      color: #fff;
+      padding: 0.7rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--gold);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      font-size: 0.88rem;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="products.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="brand-box">
+      <img src="gardabani.jpeg" alt="Gardabani Bahçesi Loqo" class="brand-logo">
+      <h1>GARDABANI BAHÇESİ</h1>
+    </div>
+    <span id="record-count" style="font-size: 0.85rem; color: var(--gold);">0 məhsul yaddaşdadır</span>
+  </div>
+
+  <div class="card card-form">
+    <form id="entry-form" class="form-layout" onsubmit="event.preventDefault(); addItem();">
+      <div class="form-row row-top">
+        <div class="form-group">
+          <label>Tarix</label>
+          <input type="date" id="date-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Məhsul Adı (Axtarış)</label>
+          <input type="text" id="product-input" placeholder="Məhsul adı yazın..." autocomplete="off" required>
+          <div id="dropdown-list" class="dropdown"></div>
+        </div>
+      </div>
+
+      <div class="form-row row-bottom">
+        <div class="form-group">
+          <label>Miqdar</label>
+          <input type="number" id="qty-input" step="any" placeholder="0" required>
+        </div>
+
+        <div class="form-group">
+          <label>Vahid Qiyməti (GEL)</label>
+          <input type="number" id="price-input" step="any" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <div class="label-wrapper">
+            <label>Ümumi Məbləğ (GEL)</label>
+            <span id="unit-badge" class="unit-badge">ədəd</span>
+          </div>
+          <input type="number" id="total-input" step="any" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">+ Əlavə Et</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card card-table">
+    <div class="table-tools">
+      <button type="button" id="btn-delete-selected" class="btn btn-danger-outline" onclick="deleteSelected()">
+        🗑️ Seçilənləri Sil (<span id="selected-count">0</span>)
+      </button>
+      <button type="button" class="btn btn-icon-danger" style="font-size: 0.8rem; margin-left: auto;" onclick="clearAll()">
+        Bütün Siyahını Təmizlə
+      </button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th class="th-checkbox"><input type="checkbox" id="select-all" onclick="toggleSelectAll(this)"></th>
+            <th>Tarix</th>
+            <th>Məhsul Adı</th>
+            <th>Miqdar</th>
+            <th>Vahid Qiyməti</th>
+            <th>Ümumi Məbləğ</th>
+            <th style="text-align: right;">Əməliyyat</th>
+          </tr>
+        </thead>
+        <tbody id="items-body"></tbody>
+      </table>
+    </div>
+
+    <div class="actions-bar">
+      <div class="total-badge" id="total-summary">Cəmi: 0.00 GEL</div>
+      <div class="actions-buttons">
+        <button class="btn btn-gold" onclick="exportToExcel()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="3" fill="#107C41"/>
+            <path d="M8 7.5L11.2 12L8 16.5H10.1L12.1 13.5L14.1 16.5H16.2L13 12L16.2 7.5H14.1L12.1 10.5L10.1 7.5H8Z" fill="white"/>
+          </svg>
+          Excel Faylını Yüklə (.xlsx)
+        </button>
+        <button class="btn btn-outline" title="Panoya Kopyala" onclick="copyForSheets()">
+          📋 Kopyala
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MİNİMALİST TƏSDİQ POP-UP (MODAL) -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-box">
+    <h3 id="modal-title">Başlıq</h3>
+    <p id="modal-desc">Əməliyyat təsviri</p>
+    <div class="modal-actions">
+      <button id="modal-cancel-btn" class="btn btn-modal-cancel">Ləğv et</button>
+      <button id="modal-confirm-btn" class="btn btn-modal-danger">Bəli, Sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST BİLDİRİŞ (ALERT ƏVƏZİ) -->
+<div id="toast" class="toast-msg"></div>
+
+<script>
+  const STORAGE_KEY = 'gardabani_purchase_items';
+  const catalog = window.CATALOG_DATA || [];
+  const pieceProductsSet = new Set(window.PIECE_PRODUCTS || []);
+  let items = [];
+  const maxResults = 8;
+  let lastPriceTypeEdited = 'total';
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-input').value = today;
+
+  const savedData = localStorage.getItem(STORAGE_KEY);
+  if (savedData) {
+    try {
+      items = JSON.parse(savedData);
+    } catch (e) {
+      items = [];
+    }
+  }
+
+  const pInput = document.getElementById('product-input');
+  const dList = document.getElementById('dropdown-list');
+  const qInput = document.getElementById('qty-input');
+  const prInput = document.getElementById('price-input');
+  const tInput = document.getElementById('total-input');
+  const unitBadge = document.getElementById('unit-badge');
+  const tableContainer = document.querySelector('.table-container');
+  let selectedIdx = -1;
+
+  // --- MİNİMALİST MODAL VƏ TOAST MƏNTİQİ ---
+  function showToast(text, duration = 3000) {
+    const toast = document.getElementById('toast');
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+
+  function showConfirm(title, desc) {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById('modal-overlay');
+      const titleEl = document.getElementById('modal-title');
+      const descEl = document.getElementById('modal-desc');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+
+      titleEl.textContent = title;
+      descEl.textContent = desc;
+      overlay.classList.add('active');
+
+      function onConfirm() {
+        cleanup();
+        resolve(true);
+      }
+
+      function onCancel() {
+        cleanup();
+        resolve(false);
+      }
+
+      function cleanup() {
+        confirmBtn.removeEventListener('click', onConfirm);
+        cancelBtn.removeEventListener('click', onCancel);
+        overlay.classList.remove('active');
+      }
+
+      confirmBtn.addEventListener('click', onConfirm);
+      cancelBtn.addEventListener('click', onCancel);
+    });
+  }
+
+  // --- SEÇİM SAYĞACINI DƏQİQ YENİLƏYƏN FUNKSİYA ---
+  function updateSelectionState() {
+    const selectedCount = items.filter(it => it.selected).length;
+    const btn = document.getElementById('btn-delete-selected');
+    const countSpan = document.getElementById('selected-count');
+    const masterCheckbox = document.getElementById('select-all');
+
+    countSpan.textContent = selectedCount;
+    btn.style.display = selectedCount > 0 ? 'inline-flex' : 'none';
+    masterCheckbox.checked = items.length > 0 && selectedCount === items.length;
+  }
+
+  function updateUnitBadge(name) {
+    if (pieceProductsSet.has(name.trim())) {
+      unitBadge.classList.add('show');
+    } else {
+      unitBadge.classList.remove('show');
+    }
+  }
+
+  function scrollToBottom() {
+    if (tableContainer) {
+      tableContainer.scrollTop = tableContainer.scrollHeight;
+    }
+  }
+
+  // İkitərəfli Avtomatik Hesablama
+  qInput.addEventListener('input', () => {
+    const q = parseFloat(qInput.value);
+    if (!q || q <= 0) return;
+    if (lastPriceTypeEdited === 'price') {
+      const p = parseFloat(prInput.value);
+      if (!isNaN(p)) tInput.value = (q * p).toFixed(2);
+    } else {
+      const t = parseFloat(tInput.value);
+      if (!isNaN(t)) prInput.value = (t / q).toFixed(4);
+    }
+  });
+
+  prInput.addEventListener('input', () => {
+    lastPriceTypeEdited = 'price';
+    const q = parseFloat(qInput.value);
+    const p = parseFloat(prInput.value);
+    if (q > 0 && !isNaN(p)) tInput.value = (q * p).toFixed(2);
+  });
+
+  tInput.addEventListener('input', () => {
+    lastPriceTypeEdited = 'total';
+    const q = parseFloat(qInput.value);
+    const t = parseFloat(tInput.value);
+    if (q > 0 && !isNaN(t)) prInput.value = (t / q).toFixed(4);
+  });
+
+  // Autocomplete
+  pInput.addEventListener('input', () => {
+    const rawVal = pInput.value;
+    const val = rawVal.trim().toLowerCase();
+    dList.innerHTML = '';
+    selectedIdx = -1;
+
+    updateUnitBadge(rawVal);
+
+    if (!val) {
+      dList.classList.remove('show');
+      return;
+    }
+
+    const matched = catalog
+      .filter(p => p.toLowerCase().includes(val))
+      .slice(0, maxResults);
+
+    if (matched.length === 0) {
+      dList.classList.remove('show');
+      return;
+    }
+
+    matched.forEach((prod) => {
+      const item = document.createElement('div');
+      item.className = 'dropdown-item';
+      item.textContent = prod;
+      item.onclick = () => selectProduct(prod);
+      dList.appendChild(item);
+    });
+
+    dList.classList.add('show');
+  });
+
+  pInput.addEventListener('keydown', (e) => {
+    const visibleItems = dList.querySelectorAll('.dropdown-item');
+    if (!visibleItems.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIdx = (selectedIdx + 1) % visibleItems.length;
+      updateActive(visibleItems);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIdx = (selectedIdx - 1 + visibleItems.length) % visibleItems.length;
+      updateActive(visibleItems);
+    } else if (e.key === 'Enter' && selectedIdx > -1) {
+      e.preventDefault();
+      selectProduct(visibleItems[selectedIdx].textContent);
+    }
+  });
+
+  function updateActive(elements) {
+    elements.forEach((el, idx) => {
+      el.classList.toggle('active', idx === selectedIdx);
+      if (idx === selectedIdx) el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  function selectProduct(name) {
+    pInput.value = name;
+    updateUnitBadge(name);
+    dList.classList.remove('show');
+    qInput.focus();
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!pInput.contains(e.target) && !dList.contains(e.target)) {
+      dList.classList.remove('show');
+    }
+  });
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    renderTable();
+  }
+
+  function addItem() {
+    const rawDate = document.getElementById('date-input').value;
+    const name = pInput.value.trim();
+    const qty = parseFloat(qInput.value);
+    const price = parseFloat(prInput.value);
+    const total = parseFloat(tInput.value);
+
+    if (!name || isNaN(qty) || (isNaN(price) && isNaN(total))) return;
+
+    const [yyyy, mm, dd] = rawDate.split('-');
+    const formattedDate = `${dd}.${mm}.${yyyy}`;
+
+    items.push({
+      date: formattedDate,
+      name,
+      qty,
+      price: price.toFixed(4),
+      total: total.toFixed(2),
+      selected: false
+    });
+
+    saveState();
+    scrollToBottom();
+
+    pInput.value = '';
+    qInput.value = '';
+    prInput.value = '';
+    tInput.value = '';
+    unitBadge.classList.remove('show');
+    lastPriceTypeEdited = 'total';
+    pInput.focus();
+  }
+
+  // TƏK-TƏK SİLMƏDƏ TƏSDİQ POP-UP
+  async function removeItem(index) {
+    const item = items[index];
+    const confirmed = await showConfirm(
+      'Məhsulu Sil',
+      `"${item.name}" məhsulunu siyahıdan silmək istədiyinizdən əminsiniz?`
+    );
+    if (!confirmed) return;
+
+    items.splice(index, 1);
+    saveState();
+  }
+
+  function toggleSelectAll(master) {
+    items.forEach(it => it.selected = master.checked);
+    saveState();
+  }
+
+  function toggleItemSelect(idx, checked) {
+    items[idx].selected = checked;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    updateSelectionState();
+  }
+
+  // ÇOXLU SİLMƏDƏ TƏSDİQ POP-UP
+  async function deleteSelected() {
+    const count = items.filter(it => it.selected).length;
+    if (!count) return;
+
+    const confirmed = await showConfirm(
+      'Seçilənləri Sil',
+      `Seçilmiş ${count} məhsulu birdəfəlik silmək istəyirsiniz?`
+    );
+    if (!confirmed) return;
+
+    items = items.filter(it => !it.selected);
+    document.getElementById('select-all').checked = false;
+    saveState();
+  }
+
+  // BÜTÜN SİYAHINI TƏMİZLƏMƏDƏ TƏSDİQ POP-UP
+  async function clearAll() {
+    if (!items.length) {
+      showToast('Siyahı artıq boşdur!');
+      return;
+    }
+
+    const confirmed = await showConfirm(
+      'Bütün Siyahını Təmizlə',
+      'Siyahıdakı bütün məhsullar silinəcək. Bu əməliyyat geri qaytarılmır. Razısınız?'
+    );
+    if (!confirmed) return;
+
+    items = [];
+    document.getElementById('select-all').checked = false;
+    saveState();
+    showToast('Bütün siyahı təmizləndi.');
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('items-body');
+    tbody.innerHTML = '';
+
+    let sum = 0;
+    items.forEach((it, idx) => {
+      sum += parseFloat(it.total);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="td-checkbox">
+          <input type="checkbox" ${it.selected ? 'checked' : ''} onchange="toggleItemSelect(${idx}, this.checked)">
+        </td>
+        <td>${it.date}</td>
+        <td><strong>${it.name}</strong></td>
+        <td>${it.qty}</td>
+        <td>${it.price}</td>
+        <td>${it.total}</td>
+        <td style="text-align: right;">
+          <button class="btn-icon-danger" onclick="removeItem(${idx})">Sil</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('total-summary').textContent = `Cəmi: ${sum.toFixed(2)} GEL`;
+    document.getElementById('record-count').textContent = `${items.length} məhsul yaddaşdadır`;
+    updateSelectionState();
+  }
+
+  function exportToExcel() {
+    if (!items.length) {
+      showToast('Endirmək üçün siyahı boşdur!');
+      return;
+    }
+
+    const dataMatrix = items.map(it => [
+      it.date,
+      "",
+      "",
+      "",
+      "",
+      it.name,
+      "",
+      Number(it.qty),
+      Number(it.price),
+      Number(it.total)
+    ]);
+
+    const dateStamp = items[0].date.replace(/\./g, '_');
+    const fileName = `Gardabani_Alis_${dateStamp}.xlsx`;
+
+    if (window.XLSX) {
+      const ws = XLSX.utils.aoa_to_sheet(dataMatrix);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Alışlar");
+      XLSX.writeFile(wb, fileName);
+    } else {
+      const tsvContent = "\uFEFF" + dataMatrix.map(row => row.join("\t")).join("\n");
+      const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Gardabani_Alis_${dateStamp}.csv`;
+      link.click();
+    }
+  }
+
+  function copyForSheets() {
+    if (!items.length) {
+      showToast('Kopyalamaq üçün siyahı boşdur!');
+      return;
+    }
+
+    const rows = items.map(it => {
+      const q = String(it.qty).replace('.', ',');
+      const p = String(it.price).replace('.', ',');
+      const t = String(it.total).replace('.', ',');
+      return `${it.date}\t\t\t\t\t${it.name}\t\t${q}\t${p}\t${t}`;
+    });
+
+    const textToCopy = rows.join('\n');
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showToast('📋 Kopyalandı! Exceldə A sütununu seçib Ctrl+V basın.');
+    });
+  }
+
+  renderTable();
+  scrollToBottom();
+</script>
+</body>
+</html>

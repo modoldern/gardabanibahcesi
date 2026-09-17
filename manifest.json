@@ -1,0 +1,15 @@
+{
+  "name": "Gardabani Bahçesi",
+  "short_name": "Gardabani",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#113c2b",
+  "theme_color": "#113c2b",
+  "icons": [
+    {
+      "src": "gardabani.jpeg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
