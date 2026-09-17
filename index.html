@@ -29,14 +29,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
+    /* --- MOBİL / GENEL TEMEL (SAYFA KAYDIRILABİLİR) --- */
     html, body {
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--text);
       padding: 0.75rem;
       display: flex;
       justify-content: center;
@@ -45,7 +48,6 @@
     .container {
       width: 100%;
       max-width: 960px;
-      height: 100%;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -123,12 +125,6 @@
 
     .row-bottom {
       grid-template-columns: 1fr 1fr 1fr 150px;
-    }
-
-    @media (max-width: 768px) {
-      .row-top, .row-bottom {
-        grid-template-columns: 1fr;
-      }
     }
 
     .form-group {
@@ -289,11 +285,8 @@
     }
 
     .card-table {
-      flex: 1;
-      min-height: 0;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     #btn-delete-selected {
@@ -310,12 +303,11 @@
     }
 
     .table-container {
-      flex: 1;
-      min-height: 0;
       overflow-y: auto;
       overflow-x: auto;
       border: 1px solid var(--border);
       border-radius: 6px;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
@@ -401,7 +393,7 @@
       background: var(--gold-dark);
     }
 
-    /* --- MİNİMALİST POP-UP (MODAL) --- */
+    /* --- MODAL POP-UP --- */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -471,7 +463,7 @@
       background: var(--danger-hover);
     }
 
-    /* --- TOAST BİLDİRİŞ (ALERT ƏVƏZİ) --- */
+    /* --- TOAST MESAJI --- */
     .toast-msg {
       position: fixed;
       bottom: 24px;
@@ -495,6 +487,72 @@
     .toast-msg.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE AYRIMI (MOBİL VS MASAÜSTÜ)
+       ========================================================================== */
+
+    /* 1) MOBİL (<= 768px): Sayfa serbestçe akar, tablo sıkışıp kaybolmaz */
+    @media (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+
+      .row-top, .row-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .card-table {
+        flex: none;
+        overflow: visible;
+        margin-bottom: 1.5rem;
+      }
+
+      .table-container {
+        flex: none;
+        min-height: 180px;
+        max-height: 360px; /* Mobilde tablonun satırları rahatça görünür ve kaydırılır */
+      }
+
+      .actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+      }
+
+      .actions-buttons {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .actions-buttons .btn {
+        flex: 1;
+      }
+    }
+
+    /* 2) MASAÜSTÜ (> 768px): Ekranı tam kaplayan, kilitli tek sayfa deneyimi */
+    @media (min-width: 769px) {
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .container {
+        height: 100%;
+      }
+
+      .card-table {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .table-container {
+        flex: 1;
+        min-height: 0;
+      }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -609,7 +667,7 @@
   </div>
 </div>
 
-<!-- TOAST BİLDİRİŞ (ALERT ƏVƏZİ) -->
+<!-- TOAST BİLDİRİŞ -->
 <div id="toast" class="toast-msg"></div>
 
 <script>
@@ -641,7 +699,6 @@
   const tableContainer = document.querySelector('.table-container');
   let selectedIdx = -1;
 
-  // --- MİNİMALİST MODAL VƏ TOAST MƏNTİQİ ---
   function showToast(text, duration = 3000) {
     const toast = document.getElementById('toast');
     toast.textContent = text;
@@ -684,7 +741,6 @@
     });
   }
 
-  // --- SEÇİM SAYĞACINI DƏQİQ YENİLƏYƏN FUNKSİYA ---
   function updateSelectionState() {
     const selectedCount = items.filter(it => it.selected).length;
     const btn = document.getElementById('btn-delete-selected');
@@ -710,7 +766,6 @@
     }
   }
 
-  // İkitərəfli Avtomatik Hesablama
   qInput.addEventListener('input', () => {
     const q = parseFloat(qInput.value);
     if (!q || q <= 0) return;
@@ -737,7 +792,6 @@
     if (q > 0 && !isNaN(t)) prInput.value = (t / q).toFixed(4);
   });
 
-  // Autocomplete
   pInput.addEventListener('input', () => {
     const rawVal = pInput.value;
     const val = rawVal.trim().toLowerCase();
@@ -847,7 +901,6 @@
     pInput.focus();
   }
 
-  // TƏK-TƏK SİLMƏDƏ TƏSDİQ POP-UP
   async function removeItem(index) {
     const item = items[index];
     const confirmed = await showConfirm(
@@ -871,7 +924,6 @@
     updateSelectionState();
   }
 
-  // ÇOXLU SİLMƏDƏ TƏSDİQ POP-UP
   async function deleteSelected() {
     const count = items.filter(it => it.selected).length;
     if (!count) return;
@@ -887,7 +939,6 @@
     saveState();
   }
 
-  // BÜTÜN SİYAHINI TƏMİZLƏMƏDƏ TƏSDİQ POP-UP
   async function clearAll() {
     if (!items.length) {
       showToast('Siyahı artıq boşdur!');
